@@ -1,0 +1,26 @@
+name: Build & test grammar
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup ANTLR 4
+      uses: NiccoMlt/setup-antlr4@v0.0.3
+    - name: Setup Java
+      uses: actions/setup-java@v1.3.0
+      with:
+        java-version: 8
+    - name: Generate Java code from ANTLR grammar
+      run: |
+        java -jar $Antlr4ToolPath -listener -visitor Showdown.g4
+        javac -cp $Antlr4ToolPath Showdown*.java
+    - name: Test ANTLR-generated Java code
+      run: |
+        java -cp .:$Antlr4ToolPath org.antlr.v4.gui.TestRig Showdown team -diagnostics test.sdt
